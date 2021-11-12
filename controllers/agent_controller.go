@@ -158,12 +158,40 @@ func (r *AgentReconciler) deploymentForAgent(m *azdevopsv1alpha1.Agent) *appsv1.
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
-						Image: "nginx",
-						Name:  "adoagent",
-						Ports: []corev1.ContainerPort{{
-							ContainerPort: 80,
-							Name:          "agent",
-						}},
+						Image: "bartvanbenthem/agent:v0.0.1",
+						Name:  "kubepodcreation",
+						Env: []corev1.EnvVar{
+							{
+								Name: "AZP_URL",
+								ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{
+											Name: "azdevops"},
+										Key: "AZP_URL",
+									},
+								},
+							},
+							{
+								Name: "AZP_TOKEN",
+								ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{
+											Name: "azdevops"},
+										Key: "AZP_TOKEN",
+									},
+								},
+							},
+							{
+								Name: "AZP_POOL",
+								ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{
+											Name: "azdevops"},
+										Key: "AZP_POOL",
+									},
+								},
+							},
+						},
 					}},
 				},
 			},
@@ -175,7 +203,7 @@ func (r *AgentReconciler) deploymentForAgent(m *azdevopsv1alpha1.Agent) *appsv1.
 }
 
 func labelsForAgent(name string) map[string]string {
-	return map[string]string{"app": "adoagent", "agent_cr": name}
+	return map[string]string{"app": "azdevops-agent", "agent_cr": name}
 }
 
 func getPodNames(pods []corev1.Pod) []string {

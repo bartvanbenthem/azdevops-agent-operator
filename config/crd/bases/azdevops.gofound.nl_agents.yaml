@@ -140,6 +140,10 @@ spec:
                 items:
                   type: string
                 type: array
+              secretAvailable:
+                description: Secret contains the name of the Secret this verrifies
+                  the Secret availability
+                type: string
             type: object
         type: object
     served: true

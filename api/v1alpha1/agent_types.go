@@ -64,6 +64,9 @@ type AgentStatus struct {
 	// Agents contains the names of the Agent pods
 	// this verrifies the deployment
 	Agents []string `json:"agents,omitempty"`
+	// Secret contains the name of the Secret
+	// this verrifies the Secret availability
+	SecretAvailable string `json:"secretAvailable,omitempty"`
 }
 
 //+kubebuilder:object:root=true
