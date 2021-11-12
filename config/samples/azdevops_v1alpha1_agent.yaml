@@ -1,0 +1,21 @@
+apiVersion: azdevops.gofound.nl/v1alpha1
+kind: Agent
+metadata:
+  name: agent-sample
+spec:
+  size: 2
+  image: # image: mcr.microsoft.com/azure-pipelines/vsts-agent:ubuntu-16.04
+  pool:
+    url: example-url
+    token: example-token
+    poolName: mypool
+    agentName: myagent
+    workDir:
+  key: {}
+  proxy:
+    httpProxy: http://proxy.gofound.nl
+    httpsProxy: https://proxy.gofound.nl
+    ftpProxy: 
+    noProxy:
+  mtuValue:
+  configMap:

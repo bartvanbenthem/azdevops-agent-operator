@@ -1,0 +1,154 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
+  name: agents.azdevops.gofound.nl
+spec:
+  group: azdevops.gofound.nl
+  names:
+    kind: Agent
+    listKind: AgentList
+    plural: agents
+    singular: agent
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Agent is the Schema for the agents API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: AgentSpec defines the desired state of Agent
+            properties:
+              configMap:
+                description: ConfigMap is for additional configurations of the Agent
+                properties:
+                  apiVersion:
+                    description: 'APIVersion defines the versioned schema of this
+                      representation of an object. Servers should convert recognized
+                      schemas to the latest internal value, and may reject unrecognized
+                      values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+                    type: string
+                  binaryData:
+                    additionalProperties:
+                      format: byte
+                      type: string
+                    description: BinaryData contains the binary data. Each key must
+                      consist of alphanumeric characters, '-', '_' or '.'. BinaryData
+                      can contain byte sequences that are not in the UTF-8 range.
+                      The keys stored in BinaryData must not overlap with the ones
+                      in the Data field, this is enforced during validation process.
+                      Using this field will require 1.10+ apiserver and kubelet.
+                    type: object
+                  data:
+                    additionalProperties:
+                      type: string
+                    description: Data contains the configuration data. Each key must
+                      consist of alphanumeric characters, '-', '_' or '.'. Values
+                      with non-UTF-8 byte sequences must use the BinaryData field.
+                      The keys stored in Data must not overlap with the keys in the
+                      BinaryData field, this is enforced during validation process.
+                    type: object
+                  immutable:
+                    description: Immutable, if set to true, ensures that data stored
+                      in the ConfigMap cannot be updated (only object metadata can
+                      be modified). If not set to true, the field can be modified
+                      at any time. Defaulted to nil. This is a beta field enabled
+                      by ImmutableEphemeralVolumes feature gate.
+                    type: boolean
+                  kind:
+                    description: 'Kind is a string value representing the REST resource
+                      this object represents. Servers may infer this from the endpoint
+                      the client submits requests to. Cannot be updated. In CamelCase.
+                      More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                    type: string
+                  metadata:
+                    description: 'Standard object''s metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata'
+                    type: object
+                type: object
+              image:
+                description: Image when provided overrides the default Agent image
+                type: string
+              key:
+                additionalProperties:
+                  format: byte
+                  type: string
+                description: Key contains the Agent ssh-key credentials to connect
+                  to endpoints
+                type: object
+              mtuValue:
+                description: Allow specifying MTU value for networks used by container
+                  jobs useful for docker-in-docker scenarios in k8s cluster
+                type: string
+              pool:
+                description: AzureDevPortal is configuring the Azure DevOps pool settings
+                  of the Agent by using additional environment variables.
+                properties:
+                  agentName:
+                    type: string
+                  poolName:
+                    type: string
+                  token:
+                    type: string
+                  url:
+                    type: string
+                  workDir:
+                    type: string
+                type: object
+              proxy:
+                description: configures the proxy settings on the agent
+                properties:
+                  ftpProxy:
+                    type: string
+                  httpProxy:
+                    type: string
+                  httpsProxy:
+                    type: string
+                  noProxy:
+                    type: string
+                type: object
+              size:
+                description: Size is the size of the Agent deployment
+                format: int32
+                minimum: 0
+                type: integer
+            required:
+            - size
+            type: object
+          status:
+            description: AgentStatus defines the observed state of Agent
+            properties:
+              agents:
+                description: Agents contains the names of the Agent pods this verrifies
+                  the deployment
+                items:
+                  type: string
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
