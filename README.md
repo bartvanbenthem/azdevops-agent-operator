@@ -8,7 +8,7 @@ Kubernetes operator for the Azure DevOps self-hosted pipe-line agent. The operat
 # docker and github repo username
 export USERNAME='bartvanbenthem'
 # image and bundle version
-export VERSION=0.9.3
+export VERSION=0.9.5
 # operator repo and name
 export OPERATOR_NAME='azdevops-agent-operator'
 export OPERATOR_GROUP='azdevops'
@@ -96,7 +96,7 @@ metadata:
   name: agent-sample
 spec:
   size: 2
-  image: # image: mcr.microsoft.com/azure-pipelines/vsts-agent:ubuntu-16.04
+  image: # image: bartvanbenthem/agent:v0.0.1
   pool:
     url: https://dev.azure.com/ProjectName
     token: exampleo4m6uekbfpodresprxcsa3fx4xduvkzvmojx
@@ -104,9 +104,9 @@ spec:
     agentName: agent-sample
     workDir:
   proxy:
-    httpProxy: 
-    httpsProxy:
-    ftpProxy: 
+    httpProxy: http://proxy_server:port
+    httpsProxy: https://proxy_server:port
+    ftpProxy: http://proxy_server:port
     noProxy:
   mtuValue:
   configMap:

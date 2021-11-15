@@ -161,6 +161,10 @@ func (r *AgentReconciler) deploymentForAgent(m *azdevopsv1alpha1.Agent) *appsv1.
 	ls := labelsForAgent(m.Name)
 	replicas := m.Spec.Size
 
+	if m.Spec.Image == "" {
+		m.Spec.Image = "bartvanbenthem/agent:latest"
+	}
+
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.Name,
@@ -177,7 +181,7 @@ func (r *AgentReconciler) deploymentForAgent(m *azdevopsv1alpha1.Agent) *appsv1.
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
-						Image: "bartvanbenthem/agent:v0.0.1",
+						Image: m.Spec.Image,
 						Name:  "kubepodcreation",
 						Env: []corev1.EnvVar{
 							{

@@ -4,7 +4,7 @@ metadata:
   name: agent-sample
 spec:
   size: 2
-  image: # image: mcr.microsoft.com/azure-pipelines/vsts-agent:ubuntu-16.04
+  image: # image: bartvanbenthem/agent:v0.0.1
   pool:
     url: https://dev.azure.com/ProjectName
     token: exampleo4m6uekbfpodresprxcsa3fx4xduvkzvmojx
@@ -12,9 +12,9 @@ spec:
     agentName: agent-sample
     workDir:
   proxy:
-    httpProxy: 
-    httpsProxy:
-    ftpProxy: 
+    httpProxy: http://proxy_server:port
+    httpsProxy: https://proxy_server:port
+    ftpProxy: http://proxy_server:port
     noProxy:
   mtuValue:
   configMap:

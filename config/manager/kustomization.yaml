@@ -13,4 +13,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: docker.io/bartvanbenthem/azdevops-agent-operator
-  newTag: v0.9.3
+  newTag: v0.9.5
