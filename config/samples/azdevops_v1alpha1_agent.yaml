@@ -6,15 +6,14 @@ spec:
   size: 2
   image: # image: mcr.microsoft.com/azure-pipelines/vsts-agent:ubuntu-16.04
   pool:
-    url: example-url
-    token: example-token
-    poolName: mypool
-    agentName: myagent
+    url: https://dev.azure.com/ProjectName
+    token: exampleo4m6uekbfpodresprxcsa3fx4xduvkzvmojx
+    poolName: operator-sh
+    agentName: agent-sample
     workDir:
-  key: {}
   proxy:
-    httpProxy: http://proxy.gofound.nl
-    httpsProxy: https://proxy.gofound.nl
+    httpProxy: 
+    httpsProxy:
     ftpProxy: 
     noProxy:
   mtuValue:

@@ -85,13 +85,6 @@ spec:
               image:
                 description: Image when provided overrides the default Agent image
                 type: string
-              key:
-                additionalProperties:
-                  format: byte
-                  type: string
-                description: Key contains the Agent ssh-key credentials to connect
-                  to endpoints
-                type: object
               mtuValue:
                 description: Allow specifying MTU value for networks used by container
                   jobs useful for docker-in-docker scenarios in k8s cluster

@@ -96,6 +96,25 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 
 	/////////////////////////////////////////////////////////////////////////
+	// Fetch Secret object if it exists
+	foundSec := &corev1.Secret{}
+	err = r.Get(ctx, types.NamespacedName{Name: agent.Name, Namespace: agent.Namespace}, foundSec)
+	if err != nil && errors.IsNotFound(err) {
+		sec := r.secretForAgent(agent)
+		logger.Info("Creating a new Secret", "Secret.Namespace", sec.Namespace, "Secret.Name", sec.Name)
+		err = r.Create(ctx, sec)
+		if err != nil {
+			logger.Error(err, "Failed to create new Secret", "Secret.Namespace", sec.Namespace, "Secret.Name", sec.Name)
+			return ctrl.Result{}, err
+		}
+		// Secret created successfully - return and requeue
+		return ctrl.Result{Requeue: true}, nil
+	} else if err != nil {
+		logger.Error(err, "Failed to get Secret")
+		return ctrl.Result{}, err
+	}
+
+	/////////////////////////////////////////////////////////////////////////
 	// Ensure deployment replicas is the same as the Agent size
 	size := agent.Spec.Size
 	if *found.Spec.Replicas != size {
@@ -166,7 +185,7 @@ func (r *AgentReconciler) deploymentForAgent(m *azdevopsv1alpha1.Agent) *appsv1.
 								ValueFrom: &corev1.EnvVarSource{
 									SecretKeyRef: &corev1.SecretKeySelector{
 										LocalObjectReference: corev1.LocalObjectReference{
-											Name: "azdevops"},
+											Name: m.Name},
 										Key: "AZP_URL",
 									},
 								},
@@ -176,7 +195,7 @@ func (r *AgentReconciler) deploymentForAgent(m *azdevopsv1alpha1.Agent) *appsv1.
 								ValueFrom: &corev1.EnvVarSource{
 									SecretKeyRef: &corev1.SecretKeySelector{
 										LocalObjectReference: corev1.LocalObjectReference{
-											Name: "azdevops"},
+											Name: m.Name},
 										Key: "AZP_TOKEN",
 									},
 								},
@@ -186,7 +205,7 @@ func (r *AgentReconciler) deploymentForAgent(m *azdevopsv1alpha1.Agent) *appsv1.
 								ValueFrom: &corev1.EnvVarSource{
 									SecretKeyRef: &corev1.SecretKeySelector{
 										LocalObjectReference: corev1.LocalObjectReference{
-											Name: "azdevops"},
+											Name: m.Name},
 										Key: "AZP_POOL",
 									},
 								},
@@ -200,6 +219,46 @@ func (r *AgentReconciler) deploymentForAgent(m *azdevopsv1alpha1.Agent) *appsv1.
 	// Set Agent instance as the owner and controller
 	ctrl.SetControllerReference(m, dep, r.Scheme)
 	return dep
+}
+
+func (r *AgentReconciler) secretForAgent(m *azdevopsv1alpha1.Agent) *corev1.Secret {
+
+	azp := azdevopsv1alpha1.AzDevPool{
+		PoolName:  m.Spec.Pool.PoolName,
+		URL:       m.Spec.Pool.URL,
+		Token:     m.Spec.Pool.Token,
+		AgentName: m.Spec.Pool.AgentName,
+		WorkDir:   m.Spec.Pool.WorkDir,
+	}
+
+	proxy := azdevopsv1alpha1.ProxyConfig{
+		HTTPProxy:  m.Spec.Proxy.HTTPProxy,
+		HTTPSProxy: m.Spec.Proxy.HTTPSProxy,
+		FTPProxy:   m.Spec.Proxy.FTPProxy,
+		NoProxy:    m.Spec.Proxy.NoProxy,
+	}
+
+	secdata := map[string]string{}
+	secdata["AZP_POOL"] = string(azp.PoolName)
+	secdata["AZP_URL"] = string(azp.URL)
+	secdata["AZP_TOKEN"] = string(azp.Token)
+	secdata["AZP_WORK"] = string(azp.WorkDir)
+	secdata["AZP_AGENT_NAME"] = string(azp.AgentName)
+	secdata["HTTP_PROXY"] = string(proxy.HTTPProxy)
+	secdata["HTTPS_PROXY"] = string(proxy.HTTPSProxy)
+	secdata["FTP_PROXY"] = string(proxy.FTPProxy)
+	secdata["NO_PROXY"] = string(proxy.NoProxy)
+	secdata["AGENT_MTU_VALUE"] = string(m.Spec.MTUValue)
+
+	sec := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      m.Name,
+			Namespace: m.Namespace,
+		},
+		StringData: secdata,
+	}
+
+	return sec
 }
 
 func labelsForAgent(name string) map[string]string {
@@ -218,5 +277,6 @@ func getPodNames(pods []corev1.Pod) []string {
 func (r *AgentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&azdevopsv1alpha1.Agent{}).
+		Owns(&corev1.Secret{}).
 		Complete(r)
 }

@@ -31,8 +31,6 @@ type AgentSpec struct {
 	// AzureDevPortal is configuring the Azure DevOps pool settings of the Agent
 	// by using additional environment variables.
 	Pool AzDevPool `json:"pool,omitempty"`
-	// Key contains the Agent ssh-key credentials to connect to endpoints
-	Key map[string][]byte `json:"key,omitempty"`
 	// configures the proxy settings on the agent
 	Proxy ProxyConfig `json:"proxy,omitempty"`
 	// Allow specifying MTU value for networks used by container jobs

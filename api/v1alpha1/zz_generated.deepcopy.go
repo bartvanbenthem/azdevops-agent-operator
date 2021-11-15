@@ -88,21 +88,6 @@ func (in *AgentList) DeepCopyObject() runtime.Object {
 func (in *AgentSpec) DeepCopyInto(out *AgentSpec) {
 	*out = *in
 	out.Pool = in.Pool
-	if in.Key != nil {
-		in, out := &in.Key, &out.Key
-		*out = make(map[string][]byte, len(*in))
-		for key, val := range *in {
-			var outVal []byte
-			if val == nil {
-				(*out)[key] = nil
-			} else {
-				in, out := &val, &outVal
-				*out = make([]byte, len(*in))
-				copy(*out, *in)
-			}
-			(*out)[key] = outVal
-		}
-	}
 	out.Proxy = in.Proxy
 	in.ConfigMap.DeepCopyInto(&out.ConfigMap)
 }
