@@ -114,4 +114,9 @@ spec:
     noProxy:
   mtuValue:
   configMap:
+    data:
+      config.yaml: |
+        server:
+          http_listen_port: 9080
+          grpc_listen_port: 0
 ```
