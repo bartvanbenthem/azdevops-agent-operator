@@ -42,9 +42,9 @@ type AgentSpec struct {
 
 // control the pool and agent work directory
 type AzDevPool struct {
-	URL       string `json:"url,omitempty"`
-	Token     string `json:"token,omitempty"`
-	PoolName  string `json:"poolName,omitempty"`
+	URL       string `json:"url"`
+	Token     string `json:"token"`
+	PoolName  string `json:"poolName"`
 	AgentName string `json:"agentName,omitempty"`
 	WorkDir   string `json:"workDir,omitempty"`
 }

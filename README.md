@@ -8,7 +8,7 @@ Kubernetes operator for the Azure DevOps self-hosted pipe-line agent. The operat
 # docker and github repo username
 export USERNAME='bartvanbenthem'
 # image and bundle version
-export VERSION=0.9.7
+export VERSION=0.9.11
 # operator repo and name
 export OPERATOR_NAME='azdevops-agent-operator'
 export OPERATOR_GROUP='azdevops'
@@ -39,7 +39,11 @@ kubectl create ns test
 kubectl -n test apply -f config/samples/azdevops_v1alpha1_agent.yaml
 kubectl -n test get agent agent-sample -o yaml
 kubectl -n test get pods
-kubectl -n test get secret
+kubectl -n test get secret agent-sample -o yaml
+kubectl -n test get configmap agent-sample -o yaml
+# check operator logs
+sudo cat /var/log/containers/azdevops-agent-operator-controller-manager-
+
 # cleanup test deployment
 make undeploy
 kubectl delete ns test

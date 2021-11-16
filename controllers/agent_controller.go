@@ -115,6 +115,25 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 
 	/////////////////////////////////////////////////////////////////////////
+	// Fetch configmap object if it exists
+	foundConfig := &corev1.ConfigMap{}
+	err = r.Get(ctx, types.NamespacedName{Name: agent.Name, Namespace: agent.Namespace}, foundConfig)
+	if err != nil && errors.IsNotFound(err) {
+		config := r.configmapForAgent(agent)
+		logger.Info("Creating a new ConfigMap", "ConfigMap.Namespace", config.Namespace, "ConfigMap.Name", config.Name)
+		err = r.Create(ctx, config)
+		if err != nil {
+			logger.Error(err, "Failed to create new ConfigMap", "ConfigMap.Namespace", config.Namespace, "ConfigMap.Name", config.Name)
+			return ctrl.Result{}, err
+		}
+		// ConfigMap created successfully - return and requeue
+		return ctrl.Result{Requeue: true}, nil
+	} else if err != nil {
+		logger.Error(err, "Failed to get ConfigMap")
+		return ctrl.Result{}, err
+	}
+
+	/////////////////////////////////////////////////////////////////////////
 	// Ensure deployment replicas is the same as the Agent size
 	size := agent.Spec.Size
 	if *found.Spec.Replicas != size {
@@ -149,7 +168,7 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		agent.Status.Agents = podNames
 		err := r.Status().Update(ctx, agent)
 		if err != nil {
-			logger.Error(err, "Failed to update Memcached status")
+			logger.Error(err, "Failed to update Agent status")
 			return ctrl.Result{}, err
 		}
 	}
@@ -226,6 +245,7 @@ func (r *AgentReconciler) deploymentForAgent(m *azdevopsv1alpha1.Agent) *appsv1.
 }
 
 func (r *AgentReconciler) secretForAgent(m *azdevopsv1alpha1.Agent) *corev1.Secret {
+	ls := labelsForAgent(m.Name)
 
 	azp := azdevopsv1alpha1.AzDevPool{
 		PoolName:  m.Spec.Pool.PoolName,
@@ -256,6 +276,7 @@ func (r *AgentReconciler) secretForAgent(m *azdevopsv1alpha1.Agent) *corev1.Secr
 
 	sec := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
+			Labels:    ls,
 			Name:      m.Name,
 			Namespace: m.Namespace,
 		},
@@ -263,6 +284,23 @@ func (r *AgentReconciler) secretForAgent(m *azdevopsv1alpha1.Agent) *corev1.Secr
 	}
 
 	return sec
+}
+
+func (r *AgentReconciler) configmapForAgent(m *azdevopsv1alpha1.Agent) *corev1.ConfigMap {
+	ls := labelsForAgent(m.Name)
+
+	configmap := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels:    ls,
+			Name:      m.Name,
+			Namespace: m.Namespace,
+		},
+		Data:       m.Spec.ConfigMap.Data,
+		BinaryData: m.Spec.ConfigMap.BinaryData,
+		Immutable:  m.Spec.ConfigMap.Immutable,
+	}
+
+	return configmap
 }
 
 func labelsForAgent(name string) map[string]string {

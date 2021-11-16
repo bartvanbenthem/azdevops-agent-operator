@@ -103,6 +103,10 @@ spec:
                     type: string
                   workDir:
                     type: string
+                required:
+                - poolName
+                - token
+                - url
                 type: object
               proxy:
                 description: configures the proxy settings on the agent
