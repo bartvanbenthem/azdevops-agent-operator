@@ -36,8 +36,11 @@ spec:
           spec:
             description: AgentSpec defines the desired state of Agent
             properties:
-              configMap:
-                description: ConfigMap is for additional configurations of the Agent
+              image:
+                description: Image when provided overrides the default Agent image
+                type: string
+              kubeConfig:
+                description: KubeConfig is for the Kube configuration of the Agent
                 properties:
                   apiVersion:
                     description: 'APIVersion defines the versioned schema of this
@@ -82,9 +85,6 @@ spec:
                     description: 'Standard object''s metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata'
                     type: object
                 type: object
-              image:
-                description: Image when provided overrides the default Agent image
-                type: string
               mtuValue:
                 description: Allow specifying MTU value for networks used by container
                   jobs useful for docker-in-docker scenarios in k8s cluster
@@ -125,6 +125,9 @@ spec:
                 format: int32
                 minimum: 0
                 type: integer
+              sshKey:
+                description: SSH key to authenticate with pipe-line agent targets
+                type: string
             required:
             - size
             type: object
@@ -137,10 +140,6 @@ spec:
                 items:
                   type: string
                 type: array
-              secretAvailable:
-                description: Secret contains the name of the Secret this verrifies
-                  the Secret availability
-                type: string
             type: object
         type: object
     served: true

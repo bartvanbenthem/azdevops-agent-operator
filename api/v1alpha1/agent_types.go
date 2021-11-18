@@ -36,8 +36,10 @@ type AgentSpec struct {
 	// Allow specifying MTU value for networks used by container jobs
 	// useful for docker-in-docker scenarios in k8s cluster
 	MTUValue string `json:"mtuValue,omitempty"`
-	// ConfigMap is for additional configurations of the Agent
-	ConfigMap corev1.ConfigMap `json:"configMap,omitempty"`
+	// SSH key to authenticate with pipe-line agent targets
+	SSHKey string `json:"sshKey,omitempty"`
+	// KubeConfig is for the Kube configuration of the Agent
+	KubeConfig corev1.ConfigMap `json:"kubeConfig,omitempty"`
 }
 
 // control the pool and agent work directory
@@ -62,9 +64,6 @@ type AgentStatus struct {
 	// Agents contains the names of the Agent pods
 	// this verrifies the deployment
 	Agents []string `json:"agents,omitempty"`
-	// Secret contains the name of the Secret
-	// this verrifies the Secret availability
-	SecretAvailable string `json:"secretAvailable,omitempty"`
 }
 
 //+kubebuilder:object:root=true
