@@ -45,6 +45,7 @@ kubectl -n test get configmap agent-sample -o yaml
 sudo cat /var/log/containers/azdevops-agent-operator-controller-manager-
 
 # cleanup test deployment
+kubectl -n test delete -f ../azdevops_v1alpha1_agent.yaml
 make undeploy
 kubectl delete ns test
 
