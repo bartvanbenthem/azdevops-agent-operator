@@ -129,6 +129,7 @@ spec:
                 description: SSH key to authenticate with pipe-line agent targets
                 type: string
             required:
+            - pool
             - size
             type: object
           status:
