@@ -108,16 +108,33 @@ spec:
     poolName: operator-sh
     agentName: agent-sample
     workDir:
+  sshKey:
   proxy:
     httpProxy: http://proxy_server:port
     httpsProxy: https://proxy_server:port
     ftpProxy: http://proxy_server:port
     noProxy:
   mtuValue:
-  configMap:
+  kubeConfig:
     data:
-      config.yaml: |
-        server:
-          http_listen_port: 9080
-          grpc_listen_port: 0
+      config: |
+        apiVersion: v1
+        clusters:
+        - cluster:
+            certificate-authority-data: 
+            server: https://127.0.0.1:6443
+          name: default
+        contexts:
+        - context:
+            cluster: default
+            user: default
+          name: default
+        current-context: default
+        kind: Config
+        preferences: {}
+        users:
+        - name: default
+          user:
+            client-certificate-data: 
+            client-key-data: 
 ```
