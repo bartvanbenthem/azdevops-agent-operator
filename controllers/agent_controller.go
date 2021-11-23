@@ -62,8 +62,8 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	/////////////////////////////////////////////////////////////////////////
 	// Fetch Agent object if it exists
-	agent := &azdevopsv1alpha1.Agent{}
-	err := r.Get(ctx, req.NamespacedName, agent)
+	agent := azdevopsv1alpha1.Agent{}
+	err := r.Get(ctx, req.NamespacedName, &agent)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			logger.Info("Agent resource not found. Ignoring since object must be deleted")
@@ -77,10 +77,10 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	/////////////////////////////////////////////////////////////////////////
 	// Fetch Deployment object if it exists
-	found := &appsv1.Deployment{}
-	err = r.Get(ctx, types.NamespacedName{Name: agent.Name, Namespace: agent.Namespace}, found)
+	found := appsv1.Deployment{}
+	err = r.Get(ctx, types.NamespacedName{Name: agent.Name, Namespace: agent.Namespace}, &found)
 	if err != nil && errors.IsNotFound(err) {
-		dep := r.deploymentForAgent(agent)
+		dep := r.deploymentForAgent(&agent)
 		logger.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
 		err = r.Create(ctx, dep)
 		if err != nil {
@@ -96,10 +96,10 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	/////////////////////////////////////////////////////////////////////////
 	// Fetch Secret object if it exists
-	foundSec := &corev1.Secret{}
-	err = r.Get(ctx, types.NamespacedName{Name: agent.Name, Namespace: agent.Namespace}, foundSec)
+	foundSec := corev1.Secret{}
+	err = r.Get(ctx, types.NamespacedName{Name: agent.Name, Namespace: agent.Namespace}, &foundSec)
 	if err != nil && errors.IsNotFound(err) {
-		sec := r.secretForAgent(agent)
+		sec := r.secretForAgent(&agent)
 		logger.Info("Creating a new Secret", "Secret.Namespace", sec.Namespace, "Secret.Name", sec.Name)
 		err = r.Create(ctx, sec)
 		if err != nil {
@@ -115,10 +115,10 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	/////////////////////////////////////////////////////////////////////////
 	// Fetch configmap object if it exists
-	foundConfig := &corev1.ConfigMap{}
-	err = r.Get(ctx, types.NamespacedName{Name: agent.Name, Namespace: agent.Namespace}, foundConfig)
+	foundConfig := corev1.ConfigMap{}
+	err = r.Get(ctx, types.NamespacedName{Name: agent.Name, Namespace: agent.Namespace}, &foundConfig)
 	if err != nil && errors.IsNotFound(err) {
-		config := r.kubeConfigForAgent(agent)
+		config := r.kubeConfigForAgent(&agent)
 		logger.Info("Creating a new ConfigMap", "ConfigMap.Namespace", config.Namespace, "ConfigMap.Name", config.Name)
 		err = r.Create(ctx, config)
 		if err != nil {
@@ -137,7 +137,7 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	size := agent.Spec.Size
 	if *found.Spec.Replicas != size {
 		found.Spec.Replicas = &size
-		err = r.Update(ctx, found)
+		err = r.Update(ctx, &found)
 		if err != nil {
 			logger.Error(err, "Failed to update Deployment", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
 			return ctrl.Result{}, err
@@ -165,7 +165,7 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	podNames := getPodNames(podList.Items)
 	if !reflect.DeepEqual(podNames, agent.Status.Agents) {
 		agent.Status.Agents = podNames
-		err := r.Status().Update(ctx, agent)
+		err := r.Status().Update(ctx, &agent)
 		if err != nil {
 			logger.Error(err, "Failed to update Agent status")
 			return ctrl.Result{}, err

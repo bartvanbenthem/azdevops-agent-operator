@@ -33,7 +33,7 @@ func (r *AgentReconciler) deploymentForAgent(m *azdevopsv1alpha1.Agent) *appsv1.
 		m.Spec.Image = "bartvanbenthem/agent:latest"
 	}
 
-	dep := &appsv1.Deployment{
+	dep := appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.Name,
 			Namespace: m.Namespace,
@@ -89,8 +89,8 @@ func (r *AgentReconciler) deploymentForAgent(m *azdevopsv1alpha1.Agent) *appsv1.
 		},
 	}
 	// Set Agent instance as the owner and controller
-	ctrl.SetControllerReference(m, dep, r.Scheme)
-	return dep
+	ctrl.SetControllerReference(m, &dep, r.Scheme)
+	return &dep
 }
 
 func (r *AgentReconciler) secretForAgent(m *azdevopsv1alpha1.Agent) *corev1.Secret {
@@ -123,7 +123,7 @@ func (r *AgentReconciler) secretForAgent(m *azdevopsv1alpha1.Agent) *corev1.Secr
 	secdata["NO_PROXY"] = string(proxy.NoProxy)
 	secdata["AGENT_MTU_VALUE"] = string(m.Spec.MTUValue)
 
-	sec := &corev1.Secret{
+	sec := corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels:    ls,
 			Name:      m.Name,
@@ -132,13 +132,13 @@ func (r *AgentReconciler) secretForAgent(m *azdevopsv1alpha1.Agent) *corev1.Secr
 		StringData: secdata,
 	}
 
-	return sec
+	return &sec
 }
 
 func (r *AgentReconciler) kubeConfigForAgent(m *azdevopsv1alpha1.Agent) *corev1.ConfigMap {
 	ls := labelsForAgent(m.Name)
 
-	configmap := &corev1.ConfigMap{
+	configmap := corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels:    ls,
 			Name:      m.Name,
@@ -149,7 +149,7 @@ func (r *AgentReconciler) kubeConfigForAgent(m *azdevopsv1alpha1.Agent) *corev1.
 		Immutable:  m.Spec.KubeConfig.Immutable,
 	}
 
-	return configmap
+	return &configmap
 }
 
 func labelsForAgent(name string) map[string]string {
