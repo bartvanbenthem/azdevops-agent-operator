@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -37,9 +36,6 @@ type AgentSpec struct {
 	// useful for docker-in-docker scenarios in k8s cluster
 	MTUValue string `json:"mtuValue,omitempty"`
 	// SSH key to authenticate with pipe-line agent targets
-	SSHKey string `json:"sshKey,omitempty"`
-	// KubeConfig is for the Kube configuration of the Agent
-	KubeConfig corev1.ConfigMap `json:"kubeConfig,omitempty"`
 }
 
 // control the pool and agent work directory

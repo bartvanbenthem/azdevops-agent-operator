@@ -135,23 +135,6 @@ func (r *AgentReconciler) secretForAgent(m *azdevopsv1alpha1.Agent) *corev1.Secr
 	return &sec
 }
 
-func (r *AgentReconciler) kubeConfigForAgent(m *azdevopsv1alpha1.Agent) *corev1.ConfigMap {
-	ls := labelsForAgent(m.Name)
-
-	configmap := corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Labels:    ls,
-			Name:      m.Name,
-			Namespace: m.Namespace,
-		},
-		Data:       m.Spec.KubeConfig.Data,
-		BinaryData: m.Spec.KubeConfig.BinaryData,
-		Immutable:  m.Spec.KubeConfig.Immutable,
-	}
-
-	return &configmap
-}
-
 func labelsForAgent(name string) map[string]string {
 	return map[string]string{"app": "azdevops-agent", "agent_cr": name}
 }

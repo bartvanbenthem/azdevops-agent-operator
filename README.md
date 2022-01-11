@@ -1,5 +1,5 @@
 # azdevops-agent-operator
-Kubernetes operator for the Azure DevOps self-hosted pipe-line agent. The operator adds an extra layer of configuration on top of the default images like: azure devops pool settings, additional proxy settings and shared persistant storage between the agents.
+Kubernetes operator for the Azure DevOps self-hosted pipe-line agent. The operator adds an extra layer of configuration on top of the default images like: azure devops pool settings and additional proxy settings.
 
 # init.sh
 ```bash
@@ -8,7 +8,7 @@ Kubernetes operator for the Azure DevOps self-hosted pipe-line agent. The operat
 # docker and github repo username
 export USERNAME='bartvanbenthem'
 # image and bundle version
-export VERSION=0.10.13
+export VERSION=0.10.14
 # operator repo and name
 export OPERATOR_NAME='azdevops-agent-operator'
 export OPERATOR_GROUP='azdevops'
@@ -40,7 +40,6 @@ kubectl -n test apply -f ../azdevops_v1alpha1_agent.yaml
 kubectl -n test get agent agent-sample -o yaml
 kubectl -n test get pods
 kubectl -n test get secret agent-sample -o yaml
-kubectl -n test get configmap agent-sample -o yaml
 # check operator logs
 sudo cat /var/log/containers/azdevops-agent-operator-controller-manager-
 

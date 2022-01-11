@@ -114,25 +114,6 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 
 	/////////////////////////////////////////////////////////////////////////
-	// Fetch configmap object if it exists
-	foundConfig := corev1.ConfigMap{}
-	err = r.Get(ctx, types.NamespacedName{Name: agent.Name, Namespace: agent.Namespace}, &foundConfig)
-	if err != nil && errors.IsNotFound(err) {
-		config := r.kubeConfigForAgent(&agent)
-		logger.Info("Creating a new ConfigMap", "ConfigMap.Namespace", config.Namespace, "ConfigMap.Name", config.Name)
-		err = r.Create(ctx, config)
-		if err != nil {
-			logger.Error(err, "Failed to create new ConfigMap", "ConfigMap.Namespace", config.Namespace, "ConfigMap.Name", config.Name)
-			return ctrl.Result{}, err
-		}
-		// ConfigMap created successfully - return
-		return ctrl.Result{}, nil
-	} else if err != nil {
-		logger.Error(err, "Failed to get ConfigMap")
-		return ctrl.Result{}, err
-	}
-
-	/////////////////////////////////////////////////////////////////////////
 	// Ensure deployment replicas is the same as the Agent size
 	size := agent.Spec.Size
 	if *found.Spec.Replicas != size {
