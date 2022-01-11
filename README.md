@@ -8,7 +8,7 @@ Kubernetes operator for the Azure DevOps self-hosted pipe-line agent. The operat
 # docker and github repo username
 export USERNAME='bartvanbenthem'
 # image and bundle version
-export VERSION=0.10.15
+export VERSION=0.10.21
 # operator repo and name
 export OPERATOR_NAME='azdevops-agent-operator'
 export OPERATOR_GROUP='azdevops'
@@ -23,13 +23,11 @@ operator-sdk create api --group $OPERATOR_GROUP --version v1alpha1 --kind $OPERA
 # always run make after changing *_types.go and *_controller.go
 go get all
 go mod tidy
-
 make generate
 make manifests
 
 #######################################################
 # Build the operator
-make manifests
 make docker-build docker-push IMG=docker.io/$USERNAME/$OPERATOR_NAME:v$VERSION
 
 #######################################################
@@ -42,6 +40,7 @@ kubectl -n test get pods
 kubectl -n test get secret agent-sample -o yaml
 # check operator logs
 sudo cat /var/log/containers/azdevops-agent-operator-controller-manager-
+kubectl -n azdevops-agent-operator-system logs azdevops-agent-operator-controller-manager-
 
 # cleanup test deployment
 kubectl -n test delete -f ../azdevops_v1alpha1_agent.yaml

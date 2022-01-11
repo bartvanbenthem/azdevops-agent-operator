@@ -17,12 +17,11 @@ limitations under the License.
 package controllers
 
 import (
+	azdevopsv1alpha1 "github.com/bartvanbenthem/azdevops-agent-operator/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
-
-	azdevopsv1alpha1 "github.com/bartvanbenthem/azdevops-agent-operator/api/v1alpha1"
 )
 
 func (r *AgentReconciler) deploymentForAgent(m *azdevopsv1alpha1.Agent) *appsv1.Deployment {
@@ -145,4 +144,14 @@ func getPodNames(pods []corev1.Pod) []string {
 		podNames = append(podNames, pod.Name)
 	}
 	return podNames
+}
+
+func getSecret(secrets []corev1.Secret, name string) *corev1.Secret {
+	var secret corev1.Secret
+	for _, s := range secrets {
+		if s.Name == name {
+			secret = s
+		}
+	}
+	return &secret
 }

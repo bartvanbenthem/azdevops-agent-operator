@@ -45,7 +45,6 @@ type AgentReconciler struct {
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=networking,resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
@@ -95,7 +94,7 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 
 	/////////////////////////////////////////////////////////////////////////
-	// DEnsure Secret is created and up-to-date
+	// Ensure Secret is created and up-to-date
 	foundSec := corev1.Secret{}
 	err = r.Get(ctx, types.NamespacedName{Name: agent.Name, Namespace: agent.Namespace}, &foundSec)
 	if err != nil && errors.IsNotFound(err) {
@@ -106,24 +105,37 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			logger.Error(err, "Failed to create new Secret", "Secret.Namespace", sec.Namespace, "Secret.Name", sec.Name)
 			return ctrl.Result{}, err
 		}
-		// Secret created successfully - return
-		return ctrl.Result{}, nil
 	} else if err != nil {
 		logger.Error(err, "Failed to get Secret")
 		return ctrl.Result{}, err
-	} else if err == nil {
-		sec := r.secretForAgent(&agent)
-		logger.Info("Deleting existing Secret", "Secret.Namespace", sec.Namespace, "Secret.Name", sec.Name)
-		r.Delete(ctx, sec)
-		logger.Info("Deleted ", "Secret.Namespace", sec.Namespace, "Secret.Name", sec.Name)
-		logger.Info("Re-creating a new Secret", "Secret.Namespace", sec.Namespace, "Secret.Name", sec.Name)
-		err = r.Create(ctx, sec)
-		if err != nil {
-			logger.Error(err, "Failed to create new Secret", "Secret.Namespace", sec.Namespace, "Secret.Name", sec.Name)
+	} else if !errors.IsNotFound(err) {
+		//logger.Info("Update existing Secret", "Secret.Namespace", agent.Namespace, "Secret.Name", agent.Name)
+		//r.Update(ctx, r.secretForAgent(&agent))
+		//if err != nil {
+		//	logger.Error(err, "Failed to update Secret", "Secret.Namespace", agent.Namespace, "Secret.Name", agent.Name)
+		//	return ctrl.Result{}, err
+		//}
+
+		// Fetch secrets to get the agent secret
+		listOpts := []client.ListOption{
+			client.InNamespace(agent.Namespace),
+			client.MatchingLabels(labelsForAgent(agent.Name)),
+		}
+		secretList := corev1.SecretList{}
+		if err = r.List(ctx, &secretList, listOpts...); err != nil {
+			logger.Error(err, "Failed to list secret", "Agent.Namespace", agent.Namespace, "Agent.Name", agent.Name)
 			return ctrl.Result{}, err
 		}
-		// Secret re-created successfully - return
-		return ctrl.Result{}, nil
+		// compare existing secret with agent spec
+		if !reflect.DeepEqual(r.secretForAgent(&agent), getSecret(secretList.Items, agent.Name)) {
+			logger.Info("Update existing Secret", "Secret.Namespace", agent.Namespace, "Secret.Name", agent.Name)
+			// update existing secret
+			r.Update(ctx, &agent)
+			if err != nil {
+				logger.Error(err, "Failed to update Secret", "Secret.Namespace", agent.Namespace, "Secret.Name", agent.Name)
+				return ctrl.Result{}, err
+			}
+		}
 	}
 
 	/////////////////////////////////////////////////////////////////////////
@@ -144,11 +156,12 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	/////////////////////////////////////////////////////////////////////////
 	// Fetch pods to get their names
-	podList := &corev1.PodList{}
 	listOpts := []client.ListOption{
 		client.InNamespace(agent.Namespace),
 		client.MatchingLabels(labelsForAgent(agent.Name)),
 	}
+
+	podList := &corev1.PodList{}
 	if err = r.List(ctx, podList, listOpts...); err != nil {
 		logger.Error(err, "Failed to list pods", "Agent.Namespace", agent.Namespace, "Agent.Name", agent.Name)
 		return ctrl.Result{}, err
