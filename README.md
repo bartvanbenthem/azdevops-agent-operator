@@ -8,7 +8,7 @@ Kubernetes operator for the Azure DevOps self-hosted pipe-line agent. The operat
 # docker and github repo username
 export USERNAME='bartvanbenthem'
 # image and bundle version
-export VERSION=0.10.14
+export VERSION=0.10.15
 # operator repo and name
 export OPERATOR_NAME='azdevops-agent-operator'
 export OPERATOR_GROUP='azdevops'
@@ -107,33 +107,10 @@ spec:
     poolName: operator-sh
     agentName: agent-sample
     workDir:
-  sshKey:
   proxy:
     httpProxy: http://proxy_server:port
     httpsProxy: https://proxy_server:port
     ftpProxy: http://proxy_server:port
     noProxy:
   mtuValue:
-  kubeConfig:
-    data:
-      config: |
-        apiVersion: v1
-        clusters:
-        - cluster:
-            certificate-authority-data: 
-            server: https://127.0.0.1:6443
-          name: default
-        contexts:
-        - context:
-            cluster: default
-            user: default
-          name: default
-        current-context: default
-        kind: Config
-        preferences: {}
-        users:
-        - name: default
-          user:
-            client-certificate-data: 
-            client-key-data: 
 ```

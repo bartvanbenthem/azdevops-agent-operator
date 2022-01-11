@@ -95,7 +95,7 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 
 	/////////////////////////////////////////////////////////////////////////
-	// Fetch Secret object if it exists
+	// DEnsure Secret is created and up-to-date
 	foundSec := corev1.Secret{}
 	err = r.Get(ctx, types.NamespacedName{Name: agent.Name, Namespace: agent.Namespace}, &foundSec)
 	if err != nil && errors.IsNotFound(err) {
@@ -111,6 +111,19 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	} else if err != nil {
 		logger.Error(err, "Failed to get Secret")
 		return ctrl.Result{}, err
+	} else if err == nil {
+		sec := r.secretForAgent(&agent)
+		logger.Info("Deleting existing Secret", "Secret.Namespace", sec.Namespace, "Secret.Name", sec.Name)
+		r.Delete(ctx, sec)
+		logger.Info("Deleted ", "Secret.Namespace", sec.Namespace, "Secret.Name", sec.Name)
+		logger.Info("Re-creating a new Secret", "Secret.Namespace", sec.Namespace, "Secret.Name", sec.Name)
+		err = r.Create(ctx, sec)
+		if err != nil {
+			logger.Error(err, "Failed to create new Secret", "Secret.Namespace", sec.Namespace, "Secret.Name", sec.Name)
+			return ctrl.Result{}, err
+		}
+		// Secret re-created successfully - return
+		return ctrl.Result{}, nil
 	}
 
 	/////////////////////////////////////////////////////////////////////////
