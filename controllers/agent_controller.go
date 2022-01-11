@@ -87,7 +87,7 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrl.Result{}, err
 		}
 		// Deployment created successfully - return and requeue
-		return ctrl.Result{Requeue: true}, nil
+		return ctrl.Result{RequeueAfter: time.Minute}, nil
 	} else if err != nil {
 		logger.Error(err, "Failed to get Deployment")
 		return ctrl.Result{}, err
@@ -109,13 +109,6 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		logger.Error(err, "Failed to get Secret")
 		return ctrl.Result{}, err
 	} else if !errors.IsNotFound(err) {
-		//logger.Info("Update existing Secret", "Secret.Namespace", agent.Namespace, "Secret.Name", agent.Name)
-		//r.Update(ctx, r.secretForAgent(&agent))
-		//if err != nil {
-		//	logger.Error(err, "Failed to update Secret", "Secret.Namespace", agent.Namespace, "Secret.Name", agent.Name)
-		//	return ctrl.Result{}, err
-		//}
-
 		// Fetch secrets to get the agent secret
 		listOpts := []client.ListOption{
 			client.InNamespace(agent.Namespace),
@@ -130,7 +123,7 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		if !reflect.DeepEqual(r.secretForAgent(&agent), getSecret(secretList.Items, agent.Name)) {
 			logger.Info("Update existing Secret", "Secret.Namespace", agent.Namespace, "Secret.Name", agent.Name)
 			// update existing secret
-			r.Update(ctx, &agent)
+			r.Update(ctx, r.secretForAgent(&agent))
 			if err != nil {
 				logger.Error(err, "Failed to update Secret", "Secret.Namespace", agent.Namespace, "Secret.Name", agent.Name)
 				return ctrl.Result{}, err
@@ -156,12 +149,11 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	/////////////////////////////////////////////////////////////////////////
 	// Fetch pods to get their names
+	podList := &corev1.PodList{}
 	listOpts := []client.ListOption{
 		client.InNamespace(agent.Namespace),
 		client.MatchingLabels(labelsForAgent(agent.Name)),
 	}
-
-	podList := &corev1.PodList{}
 	if err = r.List(ctx, podList, listOpts...); err != nil {
 		logger.Error(err, "Failed to list pods", "Agent.Namespace", agent.Namespace, "Agent.Name", agent.Name)
 		return ctrl.Result{}, err
