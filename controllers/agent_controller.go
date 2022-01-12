@@ -109,11 +109,8 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		logger.Error(err, "Failed to get Secret")
 		return ctrl.Result{}, err
 	} else if !errors.IsNotFound(err) {
-		// Fetch secret and compare with agent spec
-		secret := corev1.Secret{}
-		r.Get(ctx, secretNamespacedName(r.secretForAgent(&agent)), &secret)
-		if !reflect.DeepEqual(r.secretForAgent(&agent),
-			r.Get(ctx, secretNamespacedName(r.secretForAgent(&agent)), &secret)) {
+		// compare agent spec with found secret
+		if !reflect.DeepEqual(r.secretForAgent(&agent), &foundSec) {
 			logger.Info("Update existing Secret", "Secret.Namespace", agent.Namespace, "Secret.Name", agent.Name)
 			// update existing secret
 			r.Update(ctx, r.secretForAgent(&agent))
