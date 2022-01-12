@@ -110,7 +110,7 @@ func (r *AgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, err
 	} else if !errors.IsNotFound(err) {
 		// compare agent spec with found secret
-		if !reflect.DeepEqual(r.secretForAgent(&agent), &foundSec) {
+		if !reflect.DeepEqual(r.secretForAgent(&agent), foundSec) {
 			logger.Info("Update existing Secret", "Secret.Namespace", agent.Namespace, "Secret.Name", agent.Name)
 			// update existing secret
 			r.Update(ctx, r.secretForAgent(&agent))
