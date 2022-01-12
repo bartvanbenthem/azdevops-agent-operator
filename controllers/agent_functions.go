@@ -21,6 +21,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
@@ -146,10 +147,17 @@ func getPodNames(pods []corev1.Pod) []string {
 	return podNames
 }
 
-func getSecret(secrets []corev1.Secret, name string) *corev1.Secret {
+func secretNamespacedName(secret *corev1.Secret) types.NamespacedName {
+	return types.NamespacedName{
+		Name:      secret.Name,
+		Namespace: secret.Namespace,
+	}
+}
+
+func getSecretByName(secretList []corev1.Secret, secretName types.NamespacedName) *corev1.Secret {
 	var secret corev1.Secret
-	for _, s := range secrets {
-		if s.Name == name {
+	for _, s := range secretList {
+		if secretNamespacedName(&s) == secretName {
 			secret = s
 		}
 	}
