@@ -8,7 +8,7 @@ Kubernetes operator for the Azure DevOps self-hosted pipe-line agent. The operat
 # docker and github repo username
 export USERNAME='bartvanbenthem'
 # image and bundle version
-export VERSION=0.10.30
+export VERSION=0.10.31
 # operator repo and name
 export OPERATOR_NAME='azdevops-agent-operator'
 export OPERATOR_GROUP='azdevops'
@@ -86,7 +86,7 @@ operator-sdk olm uninstall
 # Redeploying from scratch
 operator-sdk olm install
 
-operator-sdk run bundle docker.io/$USERNAME/$OPERATOR_NAME-bundle:v1.0.0
+operator-sdk run bundle docker.io/$USERNAME/$OPERATOR_NAME-bundle:v$VERSION --timeout 15m
 kubectl apply -f config/sample/ado_v1alpha1_agent.yaml
 
 ```
